@@ -22,6 +22,11 @@ const PLACES = [
 
 const img = (n) => `https://picsum.photos/seed/adjacent${n}/640/420`;
 
+// The bundled sample is Lisbon and nothing else. Serving these places for
+// "Tokyo" would be a lie the UI could not detect, so any other city returns an
+// empty result and the page says the sample is limited.
+export const SAMPLE_CITY = 'Lisbon';
+
 export function search(term) {
   const t = term.toLowerCase();
   const hits = SEEDS.filter((s) => s.name.toLowerCase().includes(t)).slice(0, 6);
@@ -67,6 +72,8 @@ export async function crossDomain({ seeds = [] }) {
 }
 
 export async function insights({ city, seeds = [] }) {
+  const c = String(city || '').trim().toLowerCase();
+  if (c !== 'lisbon' && c !== 'lisboa') return [];
   const chosen = new Set(seeds);
   return PLACES.map(([id, name, subtype, affinity, ...inputs], i) => ({
     id,

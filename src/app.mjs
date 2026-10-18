@@ -71,6 +71,7 @@ export function createApp({ client, mock = null }) {
       taste,
       considered: built.considered,
       source: mock ? 'fixture' : 'qloo',
+      sampleCity: mock ? mock.SAMPLE_CITY ?? null : null,
     });
   }
 
@@ -100,7 +101,7 @@ export function createApp({ client, mock = null }) {
 
   const handle = async function handle({ method, path, query = {}, body = null }) {
     if (method === 'OPTIONS') return { status: 204, headers: CORS, body: '' };
-    if (method === 'GET' && path === '/api/health') return json(200, { ok: true, source: mock ? 'fixture' : 'qloo', hasKey: !mock });
+    if (method === 'GET' && path === '/api/health') return json(200, { ok: true, source: mock ? 'fixture' : 'qloo', hasKey: !mock, sampleCity: mock ? mock.SAMPLE_CITY ?? null : null });
     if (method === 'GET' && path === '/api/search') {
       const term = (query.q || '').trim();
       if (term.length < 2) return json(400, { error: 'q must be at least 2 characters' });

@@ -254,7 +254,11 @@ function render(p){
       <div class="meta">${p.stops.length} stop${p.stops.length === 1 ? '' : 's'} · built from ${p.seeds.map((s) => escapeHtml(s.label)).join(', ')}</div>
     </div>`;
   if (!p.stops.length) {
-    out.innerHTML = head + `<div class="empty">Qloo returned ${p.considered} places but none matched a slot. Try another city or a broader seed.</div>`;
+    const sampleOnly = p.sampleCity && p.city.trim().toLowerCase() !== p.sampleCity.toLowerCase();
+    const msg = sampleOnly
+      ? `The bundled sample only covers ${escapeHtml(p.sampleCity)}, so ${escapeHtml(p.city)} comes back empty on purpose. It is a fixture, not an answer — with a Qloo key this same call runs against the live taste graph in any city.`
+      : `Qloo returned ${p.considered} places but none matched a slot. Try another city or a broader seed.`;
+    out.innerHTML = head + `<div class="empty">${msg}</div>`;
     return;
   }
   const items = p.stops.map((s) => {

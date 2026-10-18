@@ -46,9 +46,22 @@ test('a Qloo failure surfaces its real status, never a fabricated answer', async
 });
 
 test('GET /api/health reports the fixture source when there is no key', async () => {
-  const app = createApp({ client: null, mock: {} });
+  const app = createApp({ client: null, mock: { SAMPLE_CITY: 'Lisbon' } });
   const res = await app({ method: 'GET', path: '/api/health' });
   const body = JSON.parse(res.body);
   assert.equal(body.source, 'fixture');
   assert.equal(body.hasKey, false);
+  assert.equal(body.sampleCity, 'Lisbon');
+});
+
+test('the fixture never serves Lisbon places for another city', async () => {
+  const fixture = await import('../fixtures/lisbon.mjs');
+  const app = createApp({ client: null, mock: fixture });
+  const lisbon = JSON.parse((await post(app, '/api/plan', { seeds: [{ id: 'seed-burial', label: 'Burial' }], city: 'Lisbon' })).body);
+  const tokyo = JSON.parse((await post(app, '/api/plan', { seeds: [{ id: 'seed-burial', label: 'Burial' }], city: 'Tokyo' })).body);
+  assert.ok(lisbon.stops.length >= 4);
+  assert.equal(lisbon.sampleCity, 'Lisbon');
+  assert.equal(tokyo.stops.length, 0);
+  assert.equal(tokyo.considered, 0);
+  assert.equal(tokyo.sampleCity, 'Lisbon', 'the UI needs this to explain why the day is empty');
 });
