@@ -337,6 +337,14 @@ $('#demo').addEventListener('click', async () => {
     srcBadge.className = 'badge' + (h.source === 'fixture' ? '' : ' live');
   } catch { srcBadge.textContent = 'offline'; }
   renderChips();
+
+  // ?demo=1 — a judge should see the product, not an empty form. Nothing is
+  // fabricated: the same fixture-labelled path runs, just without the typing.
+  if (new URLSearchParams(location.search).has('demo')) {
+    document.querySelector('#demo').click();
+    for (let i = 0; i < 40 && state.seeds.length < 3; i++) await new Promise((r) => setTimeout(r, 100));
+    if (state.seeds.length) document.querySelector('#go').click();
+  }
 })();
 </script>
 </body>
