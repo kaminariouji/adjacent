@@ -98,7 +98,7 @@ export function createApp({ client, mock = null }) {
     return json(200, { seeds: seeds.map((s) => ({ id: s.id, label: s.label || s.name || s.id })), domains: shaped, source: mock ? 'fixture' : 'qloo' });
   }
 
-  return async function handle({ method, path, query = {}, body = null }) {
+  const handle = async function handle({ method, path, query = {}, body = null }) {
     if (method === 'OPTIONS') return { status: 204, headers: CORS, body: '' };
     if (method === 'GET' && path === '/api/health') return json(200, { ok: true, source: mock ? 'fixture' : 'qloo', hasKey: !mock });
     if (method === 'GET' && path === '/api/search') {
@@ -114,4 +114,11 @@ export function createApp({ client, mock = null }) {
     if (method === 'POST' && path === '/api/cross') return cross(body || {});
     return json(404, { error: 'not found' });
   };
+
+  // The MCP server calls these directly, so an agent and the web page share one
+  // implementation of the taste logic.
+  handle.plan = plan;
+  handle.cross = cross;
+  handle.search = search;
+  return handle;
 }

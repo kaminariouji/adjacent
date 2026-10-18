@@ -8,6 +8,6 @@
   "scripts": {
     "start": "node src/server.mjs",
     "start:mock": "node scripts/mock.mjs",
-    "test": "node --test test/qloo.test.mjs test/plan.test.mjs test/app.test.mjs"
+    "test": "node --test test/qloo.test.mjs test/plan.test.mjs test/app.test.mjs test/mcp.test.mjs"
   }
 }

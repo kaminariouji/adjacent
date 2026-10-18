@@ -140,6 +140,8 @@
 
   <footer>
     <b>How the reasons work.</b> Each chip is Qloo's own explainability score for one of your seeds — the share of that recommendation's affinity that came from that input. If Qloo returns no explanation for a place, the card says nothing rather than inventing a story. Empty slots are named, not filled. The cross-media panel asks the same seeds for artists, films and books; a domain Qloo cannot answer is shown as an error, not as a guess.
+    <br /><br />
+    <b>Agents can use this.</b> The same taste logic is exposed over MCP at <code>POST /mcp</code> with three tools: <code>find_entities</code>, <code>plan_day</code> and <code>cross_media</code>. The web page is just one client.
   </footer>
 </div>
 
