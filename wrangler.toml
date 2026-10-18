@@ -1,0 +1,7 @@
+name = "adjacent"
+main = "src/worker.mjs"
+compatibility_date = "2026-10-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
