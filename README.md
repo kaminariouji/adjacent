@@ -12,6 +12,20 @@ Travel recommendations usually ask what you want to *do*. Adjacent asks what you
 
 Qloo's taste graph is the only reason this works. A generic LLM would answer with the same ten tourist places for everyone.
 
+## Who this is for
+
+- **The traveller with specific taste and three days.** They do not want "top 10 Lisbon". They want the record shop that a Burial fan and a Wong Kar-wai fan both end up in. Today they get that by asking a friend with the same taste, or by scrolling a forum for an hour.
+- **The city-break planner who has already been everywhere obvious.** The value is not discovery of a city, it is discovery of *their* corner of it.
+- **The agent builder.** An assistant that plans trips has no cultural grounding; it hallucinates a restaurant. `POST /mcp` gives it one call that returns places *and* the evidence for each.
+
+What all three share: the answer depends on cross-domain taste, and the evidence has to be checkable. That is exactly what a taste graph provides and what a language model cannot.
+
+## Why it cannot work without Qloo
+
+Ask an LLM for "a bar for someone who likes Burial and Wong Kar-wai" and it will produce a plausible paragraph with no source. Ask Adjacent and you get a place, an affinity number, and the share of that affinity that came from Burial — a number the user can disagree with. Remove Qloo and the product has nothing to show but prose.
+
+The cross-media panel makes the same point in the other direction: the same three seeds return artists, films and books, and a domain Qloo cannot answer stays empty instead of being filled with titles that sound right.
+
 ## What makes the reasons real
 
 Every card shows chips like `because you love Burial · 0.52`. Those numbers are not generated text — they come from Qloo's own explainability payload (`feature.explainability=true`), which reports which input entities contributed to a recommendation and with what normalised weight.
