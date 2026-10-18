@@ -4,7 +4,7 @@ This is a real transcript: the requests below were sent to `POST /mcp` on the ho
 and the responses are what came back, trimmed only where marked. Nothing is hand-written.
 
 Endpoint: `https://adjacent.ojikaminari.workers.dev/mcp`
-Run at: 2026-10-18T06:41:33.565Z
+Run at: 2026-10-18T06:42:46.220Z
 
 The chain an agent follows is `find_entities → plan_day → cross_media`: names become ids,
 ids become a day, and the same ids become other media. A failure at any step comes back as
@@ -133,10 +133,9 @@ Result: 5 stops, 0 gaps, source `fixture`.
   ],
   "gaps": [],
   "taste": [
-    "dub techno 0.71",
-    "nocturnal 0.64",
-    "bristol sound 0.58",
-    "slow cinema 0.55"
+    "slow cinema 0.66",
+    "hong kong new wave 0.57",
+    "nocturnal 0.41"
   ]
 }
 ```

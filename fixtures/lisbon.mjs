@@ -33,13 +33,28 @@ export function search(term) {
   return hits.length ? hits : SEEDS.slice(0, 3).map((s) => ({ ...s, name: `${term} (fixture match: ${s.name})` }));
 }
 
-const TAGS = [
-  ['dub techno', 0.71], ['nocturnal', 0.64], ['bristol sound', 0.58],
-  ['slow cinema', 0.55], ['ambient', 0.49], ['tonkotsu ramen', 0.44],
-];
+// Tags per seed, so the shared-taste strip matches the seeds that were actually
+// sent. A fixed list would tell a Wong Kar-wai fan they listen to dub techno.
+const TAGS_BY_SEED = {
+  'seed-burial': [['dub techno', 0.71], ['bristol sound', 0.58], ['ambient', 0.49]],
+  'seed-mfdoom': [['abstract hip hop', 0.69], ['sampledelia', 0.52], ['nocturnal', 0.44]],
+  'seed-wkw': [['slow cinema', 0.66], ['hong kong new wave', 0.57], ['nocturnal', 0.41]],
+  'seed-ichiran': [['tonkotsu ramen', 0.63], ['late-night dining', 0.5], ['solo counter', 0.38]],
+  'seed-bolano': [['latin american fiction', 0.61], ['slow cinema', 0.4], ['nocturnal', 0.33]],
+};
 
-export async function tasteTags() {
-  return TAGS.map(([name, affinity]) => ({ id: 'tag-' + name.replace(/\s+/g, '-'), name, type: 'urn:tag:keyword:media', affinity }));
+export async function tasteTags({ seeds = [] } = {}) {
+  const chosen = seeds.length ? seeds : Object.keys(TAGS_BY_SEED);
+  const merged = new Map();
+  for (const id of chosen) {
+    for (const [name, affinity] of TAGS_BY_SEED[id] || []) {
+      merged.set(name, Math.max(merged.get(name) || 0, affinity));
+    }
+  }
+  return [...merged.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([name, affinity]) => ({ id: 'tag-' + name.replace(/\s+/g, '-'), name, type: 'urn:tag:keyword:media', affinity }));
 }
 
 const CROSS = {
