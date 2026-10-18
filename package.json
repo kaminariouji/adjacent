@@ -1,0 +1,13 @@
+{
+  "name": "adjacent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A city that fits you — a Qloo-powered day planner that shows the taste evidence behind every stop.",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "start:mock": "node scripts/mock.mjs",
+    "test": "node --test test/qloo.test.mjs test/plan.test.mjs"
+  }
+}

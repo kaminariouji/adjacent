@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Adjacent — a city that fits you</title>
+<meta name="description" content="Pick a few things you love. Adjacent builds a day in a city you have not visited, and shows the taste evidence behind every stop." />
+<style>
+  :root{
+    --paper:#f6f1e7; --paper-2:#efe8da; --ink:#17130f; --ink-2:#4a4138;
+    --muted:#8b7f70; --line:#d9cfbe; --accent:#b64a26; --accent-soft:#f0d9cd;
+    --ok:#2f6b4f; --shadow:0 1px 2px rgba(23,19,15,.06),0 12px 40px rgba(23,19,15,.08);
+    --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  body{min-height:100vh}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid var(--line)}
+  .mark{display:flex;align-items:baseline;gap:10px}
+  .mark b{font-family:var(--serif);font-size:20px;letter-spacing:.18em;font-weight:600}
+  .mark span{font-size:12px;color:var(--muted);letter-spacing:.04em}
+  .badge{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--ink-2);background:#fff8}
+  .badge.live{color:var(--ok);border-color:#bcd8c9;background:#eef6f1}
+  .hero{padding:64px 0 34px}
+  .hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(38px,6vw,66px);line-height:1.02;letter-spacing:-.02em;margin:0 0 18px;max-width:none;text-wrap:balance}
+  .hero p{margin:0;max-width:52ch;color:var(--ink-2);font-size:17px;line-height:1.55}
+  .composer{margin:34px 0 10px;background:#fffdf8;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:22px}
+  .field{margin-bottom:18px}
+  .field:last-of-type{margin-bottom:0}
+  label.lbl{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .searchrow{position:relative}
+  input[type=text]{width:100%;font:inherit;font-size:16px;padding:13px 14px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink)}
+  input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+  .suggest{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:none}
+  .suggest.open{display:block}
+  .suggest button{display:flex;width:100%;gap:10px;align-items:center;text-align:left;padding:11px 13px;background:none;border:0;border-bottom:1px solid #f1eade;font:inherit;font-size:14px;cursor:pointer}
+  .suggest button:last-child{border-bottom:0}
+  .suggest button:hover,.suggest button[aria-selected=true]{background:var(--paper-2)}
+  .suggest small{color:var(--muted);margin-left:auto;font-size:11px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:0}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);color:#6d2a12;border-radius:999px;padding:7px 8px 7px 13px;font-size:14px}
+  .chip button{background:none;border:0;font-size:15px;line-height:1;color:#8a3b1e;cursor:pointer;padding:2px 4px;border-radius:999px}
+  .chip button:hover{background:#e6c4b2}
+  .row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
+  .row .grow{flex:1 1 260px}
+  button.ghost{background:none;border:0;color:var(--accent);font:inherit;font-size:13.5px;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;margin-top:14px}
+  button.ghost:hover{color:#8f3417}
+  button.primary{font:inherit;font-weight:600;font-size:15px;padding:14px 22px;border-radius:11px;border:1px solid #8f3417;background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 1px 0 #00000010}
+  button.primary:hover{background:#a03f1e}
+  button.primary:disabled{opacity:.55;cursor:not-allowed}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:10px}
+  main{padding-bottom:80px}
+  .result{margin-top:38px}
+  .result-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding-top:26px;flex-wrap:wrap}
+  .result-head h2{font-family:var(--serif);font-weight:500;font-size:34px;margin:0;letter-spacing:-.01em}
+  .result-head .meta{color:var(--muted);font-size:13px}
+  .stops{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:16px}
+  .stop{display:grid;grid-template-columns:96px 1fr;gap:20px;background:#fffdf8;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+  .when{padding:20px 0 20px 20px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .when b{display:block;font-family:var(--serif);font-size:22px;letter-spacing:0;text-transform:none;color:var(--ink);margin-top:4px;font-weight:500}
+  .body{padding:18px 20px 18px 0;display:grid;grid-template-columns:1fr 220px;gap:18px;align-items:start}
+  .body h3{margin:0 0 4px;font-family:var(--serif);font-weight:600;font-size:23px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+  .why{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .why span{font-size:12.5px;background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--ink-2)}
+  .why span b{font-weight:600;color:var(--ink)}
+  .score{margin-top:12px;font-size:12px;color:var(--muted)}
+  .score i{font-style:normal;color:var(--ink);font-weight:600}
+  figure{margin:0;background:var(--paper-2);border-radius:12px;overflow:hidden;aspect-ratio:3/2}
+  figure img{width:100%;height:100%;object-fit:cover;display:block}
+  .gaps{margin-top:18px;font-size:13.5px;color:var(--ink-2);background:#fff8;border:1px dashed var(--line);border-radius:12px;padding:14px 16px}
+  .empty{margin-top:34px;color:var(--muted);font-size:14px}
+  .err{margin-top:26px;border:1px solid #e3b9a8;background:#fdf0ea;color:#7a2d12;border-radius:12px;padding:14px 16px;font-size:14px}
+  footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--muted);font-size:12.5px;line-height:1.6}
+  footer b{color:var(--ink-2)}
+  @media (max-width:760px){
+    .stop{grid-template-columns:1fr}
+    .when{padding:18px 18px 0}
+    .body{grid-template-columns:1fr;padding:12px 18px 20px}
+    figure{order:-1}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="mark"><b>ADJACENT</b><span>a city that fits you</span></div>
+    <div class="badge" id="src">checking source…</div>
+  </header>
+
+  <section class="hero">
+    <h1>A city that fits you.</h1>
+    <p>Pick a few things you love — a musician, a film, a restaurant. Adjacent builds a day in a city you have not visited, and shows the taste evidence behind every stop.</p>
+  </section>
+
+  <section class="composer" aria-label="Build a day">
+    <div class="field">
+      <label class="lbl" for="seed">Things you love</label>
+      <div class="searchrow">
+        <input id="seed" type="text" autocomplete="off" placeholder="Burial, Wong Kar-wai, Ichiran…" aria-autocomplete="list" aria-controls="suggest" aria-expanded="false" />
+        <div class="suggest" id="suggest" role="listbox" aria-label="Suggestions"></div>
+      </div>
+      <div class="chips" id="chips" aria-live="polite"></div>
+      <div class="hint">Add two or three. The more specific, the stranger and better the day gets.</div>
+    </div>
+    <div class="row">
+      <div class="grow field">
+        <label class="lbl" for="city">City you want to visit</label>
+        <input id="city" type="text" placeholder="Lisbon" value="Lisbon" />
+      </div>
+      <button class="primary" id="go" disabled>Build the day</button>
+    </div>
+    <button type="button" class="ghost" id="demo">Try an example: Burial + Wong Kar-wai + Ichiran → Lisbon</button>
+    <div class="hint" id="status" role="status"></div>
+  </section>
+
+  <main>
+    <div id="out" aria-live="polite"></div>
+  </main>
+
+  <footer>
+    <b>How the reasons work.</b> Each chip is Qloo's own explainability score for one of your seeds — the share of that recommendation's affinity that came from that input. If Qloo returns no explanation for a place, the card says nothing rather than inventing a story. Empty slots are named, not filled.
+  </footer>
+</div>
+
+<script>
+const state = { seeds: [], results: [], active: -1, source: null };
+const $ = (s) => document.querySelector(s);
+const seedInput = $('#seed'), suggest = $('#suggest'), chips = $('#chips'), cityInput = $('#city'), go = $('#go'), out = $('#out'), statusEl = $('#status'), srcBadge = $('#src');
+
+function setStatus(t){ statusEl.textContent = t || ''; }
+function renderChips(){
+  chips.innerHTML = '';
+  state.seeds.forEach((s, i) => {
+    const el = document.createElement('span');
+    el.className = 'chip';
+    el.innerHTML = `<span></span>`;
+    el.firstChild.textContent = s.name;
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('aria-label', 'Remove ' + s.name); b.textContent = '×';
+    b.onclick = () => { state.seeds.splice(i,1); renderChips(); };
+    el.appendChild(b);
+    chips.appendChild(el);
+  });
+  go.disabled = state.seeds.length === 0;
+}
+
+let timer = null, reqId = 0;
+seedInput.addEventListener('input', () => {
+  const q = seedInput.value.trim();
+  clearTimeout(timer);
+  if (q.length < 2) { suggest.classList.remove('open'); seedInput.setAttribute('aria-expanded','false'); return; }
+  timer = setTimeout(async () => {
+    const id = ++reqId;
+    try {
+      const r = await fetch('/api/search?q=' + encodeURIComponent(q));
+      const j = await r.json();
+      if (id !== reqId) return;
+      state.results = j.results || []; state.active = -1;
+      paintSuggest();
+    } catch { suggest.classList.remove('open'); }
+  }, 180);
+});
+
+function paintSuggest(){
+  suggest.innerHTML = '';
+  if (!state.results.length) { suggest.classList.remove('open'); seedInput.setAttribute('aria-expanded','false'); return; }
+  state.results.forEach((r, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.role = 'option';
+    b.innerHTML = `<span></span><small></small>`;
+    b.firstChild.textContent = r.name || r.id;
+    b.lastChild.textContent = (r.type || '').replace('urn:entity:', '');
+    b.onclick = () => addSeed(r);
+    suggest.appendChild(b);
+  });
+  suggest.classList.add('open');
+  seedInput.setAttribute('aria-expanded','true');
+}
+
+function addSeed(r){
+  if (!state.seeds.find((s) => s.id === r.id)) state.seeds.push({ id: r.id, name: r.name || r.id });
+  seedInput.value = ''; state.results = []; suggest.classList.remove('open'); seedInput.setAttribute('aria-expanded','false');
+  renderChips(); seedInput.focus();
+}
+
+seedInput.addEventListener('keydown', (e) => {
+  if (!state.results.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    state.active = (state.active + (e.key === 'ArrowDown' ? 1 : -1) + state.results.length) % state.results.length;
+    [...suggest.children].forEach((c, i) => c.setAttribute('aria-selected', String(i === state.active)));
+  } else if (e.key === 'Enter' && state.active >= 0) {
+    e.preventDefault(); addSeed(state.results[state.active]);
+  } else if (e.key === 'Escape') {
+    suggest.classList.remove('open'); seedInput.setAttribute('aria-expanded','false');
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.searchrow')) { suggest.classList.remove('open'); seedInput.setAttribute('aria-expanded','false'); }
+});
+
+go.addEventListener('click', async () => {
+  go.disabled = true; setStatus('Reading the taste graph…');
+  out.innerHTML = '';
+  try {
+    const r = await fetch('/api/plan', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ seeds: state.seeds.map((s) => ({ id: s.id, label: s.name })), city: cityInput.value.trim() }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.message || j.error || ('HTTP ' + r.status));
+    render(j);
+    setStatus('');
+  } catch (err) {
+    out.innerHTML = `<div class="err"><b>Could not build the day.</b> ${escapeHtml(err.message)}</div>`;
+    setStatus('');
+  } finally { go.disabled = state.seeds.length === 0; }
+});
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function render(p){
+  const head = `<div class="result-head">
+      <h2>${escapeHtml(p.city)}</h2>
+      <div class="meta">${p.stops.length} stop${p.stops.length === 1 ? '' : 's'} · built from ${p.seeds.map((s) => escapeHtml(s.label)).join(', ')}</div>
+    </div>`;
+  if (!p.stops.length) {
+    out.innerHTML = head + `<div class="empty">Qloo returned ${p.considered} places but none matched a slot. Try another city or a broader seed.</div>`;
+    return;
+  }
+  const items = p.stops.map((s) => {
+    const e = s.entity;
+    const why = s.why.length
+      ? s.why.map((w) => `<span>because you love <b>${escapeHtml(w.label)}</b> · ${w.score.toFixed(2)}</span>`).join('')
+      : `<span>no explanation returned</span>`;
+    const score = typeof s.score === 'number' ? `<div class="score">affinity <i>${s.score.toFixed(2)}</i></div>` : '';
+    const fig = e.image ? `<figure><img src="${escapeHtml(e.image)}" alt="" loading="lazy" /></figure>` : `<figure></figure>`;
+    return `<li class="stop">
+      <div class="when">${escapeHtml(s.slotLabel)}</div>
+      <div class="body">
+        <div>
+          <h3>${escapeHtml(e.name || 'Unnamed place')}</h3>
+          <p class="sub">${escapeHtml(e.subtype || e.city || '')}</p>
+          <div class="why">${why}</div>
+          ${score}
+        </div>
+        ${fig}
+      </div>
+    </li>`;
+  }).join('');
+  const gaps = p.gaps.length ? `<div class="gaps"><b>Not filled:</b> ${p.gaps.map(escapeHtml).join(', ')}. Qloo did not return a place that fits those slots in ${escapeHtml(p.city)} — so the day is shorter rather than padded.</div>` : '';
+  out.innerHTML = head + `<ul class="stops">${items}</ul>` + gaps;
+}
+
+$('#demo').addEventListener('click', async () => {
+  const names = ['Burial', 'Wong Kar-wai', 'Ichiran'];
+  state.seeds = [];
+  for (const n of names) {
+    try {
+      const j = await (await fetch('/api/search?q=' + encodeURIComponent(n))).json();
+      if (j.results && j.results[0]) state.seeds.push({ id: j.results[0].id, name: j.results[0].name });
+    } catch {}
+  }
+  cityInput.value = 'Lisbon';
+  renderChips();
+});
+
+(async () => {
+  try {
+    const h = await (await fetch('/api/health')).json();
+    state.source = h.source;
+    srcBadge.textContent = h.source === 'fixture' ? 'fixture data' : 'live Qloo';
+    srcBadge.className = 'badge' + (h.source === 'fixture' ? '' : ' live');
+  } catch { srcBadge.textContent = 'offline'; }
+  renderChips();
+})();
+</script>
+</body>
+</html>
