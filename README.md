@@ -61,6 +61,8 @@ curl -s https://adjacent.ojikaminari.workers.dev/mcp \
 
 `initialize`, `tools/list`, `tools/call` and `ping` are implemented; notifications return `202` with no body. A tool failure comes back as `isError: true` with the real message, so the model can read it instead of the transport breaking.
 
+A real session — requests and raw responses, nothing hand-written — is in [`demo/agent-session.md`](demo/agent-session.md).
+
 ## Run it
 
 ```bash
