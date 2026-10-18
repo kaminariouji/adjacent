@@ -28,6 +28,15 @@ export function search(term) {
   return hits.length ? hits : SEEDS.slice(0, 3).map((s) => ({ ...s, name: `${term} (fixture match: ${s.name})` }));
 }
 
+const TAGS = [
+  ['dub techno', 0.71], ['nocturnal', 0.64], ['bristol sound', 0.58],
+  ['slow cinema', 0.55], ['ambient', 0.49], ['tonkotsu ramen', 0.44],
+];
+
+export async function tasteTags() {
+  return TAGS.map(([name, affinity]) => ({ id: 'tag-' + name.replace(/\s+/g, '-'), name, type: 'urn:tag:keyword:media', affinity }));
+}
+
 export async function insights({ city, seeds = [] }) {
   const chosen = new Set(seeds);
   return PLACES.map(([id, name, subtype, affinity, ...inputs], i) => ({

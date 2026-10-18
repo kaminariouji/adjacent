@@ -37,6 +37,15 @@ export function createApp({ client, mock = null }) {
       // Surface the real status; never fall back to a fabricated day.
       return json(502, { error: 'qloo', status: err.status ?? null, message: err.message });
     }
+    // Best-effort: the tag layer explains *why* the seeds cluster. A failure
+    // here must not take the day down, so it is reported as null, never faked.
+    let taste = null;
+    try {
+      taste = mock ? await mock.tasteTags({ seeds: seedIds }) : await q.tasteTags({ seeds: seedIds, take: 8 });
+    } catch {
+      taste = null;
+    }
+
     const built = buildPlan({ entities, city, seedLabels });
     return json(200, {
       city,
@@ -59,6 +68,7 @@ export function createApp({ client, mock = null }) {
         },
       })),
       gaps: built.gaps,
+      taste,
       considered: built.considered,
       source: mock ? 'fixture' : 'qloo',
     });

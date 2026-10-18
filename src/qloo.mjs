@@ -100,6 +100,28 @@ export class QlooClient {
   }
 
   /**
+   * /v2/insights with filter.type=urn:tag — the "taste analysis" view.
+   * Returns the tags that best describe the audience behind the seeds, which is
+   * what turns a bare affinity number into something a person can read.
+   */
+  async tasteTags({ seeds = [], tagTypes, take = 8 } = {}) {
+    if (!seeds.length) return [];
+    const body = await this.#get('/v2/insights', {
+      'filter.type': 'urn:tag',
+      'filter.tag.types': tagTypes,
+      'signal.interests.entities': seeds,
+      take,
+    });
+    const list = body?.results?.tags || body?.tags || [];
+    return list.map((t) => ({
+      id: t.id || null,
+      name: t.name || null,
+      type: t.type || null,
+      affinity: typeof t.affinity === 'number' ? t.affinity : null,
+    })).filter((t) => t.name);
+  }
+
+  /**
    * /v2/insights — the only recommendation endpoint the hackathon key supports.
    * seeds: array of entity ids (signal.interests.entities).
    * city/country narrow the result set geographically.

@@ -101,3 +101,22 @@ test('normaliseEntity keeps explainability and tags, drops the rest', () => {
   assert.deepEqual(n.tags, ['wine', 'tapas']);
   assert.equal(n.explainability.inputs[0].score, 0.42);
 });
+
+test('tasteTags asks for urn:tag insights and reads results.tags', async () => {
+  const { server, seen, base } = await fakeQloo(() => ({
+    status: 200,
+    body: { results: { tags: [{ id: 't1', name: 'dub techno', affinity: 0.71 }, { name: 'nocturnal' }] } },
+  }));
+  const c = new QlooClient({ apiKey: 'k', base });
+  const out = await c.tasteTags({ seeds: ['a', 'b'] });
+  server.close();
+  assert.equal(seen[0].query['filter.type'], 'urn:tag');
+  assert.equal(seen[0].query['signal.interests.entities'], 'a,b');
+  assert.deepEqual(out.map((t) => t.name), ['dub techno', 'nocturnal']);
+  assert.equal(out[0].affinity, 0.71);
+});
+
+test('tasteTags with no seeds makes no request at all', async () => {
+  const c = new QlooClient({ apiKey: 'k', base: 'http://127.0.0.1:9', timeout: 500 });
+  assert.deepEqual(await c.tasteTags({ seeds: [] }), []);
+});

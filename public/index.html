@@ -57,6 +57,10 @@
   .result-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding-top:26px;flex-wrap:wrap}
   .result-head h2{font-family:var(--serif);font-weight:500;font-size:34px;margin:0;letter-spacing:-.01em}
   .result-head .meta{color:var(--muted);font-size:13px}
+  .taste{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+  .taste .taste-lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+  .taste .tag{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:#fffdf8;color:var(--ink-2)}
+  .taste .tag i{font-style:normal;color:var(--muted);margin-left:6px}
   .stops{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:16px}
   .stop{display:grid;grid-template-columns:96px 1fr;gap:20px;background:#fffdf8;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
   .when{padding:20px 0 20px 20px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
@@ -253,8 +257,11 @@ function render(p){
       </div>
     </li>`;
   }).join('');
+  const taste = Array.isArray(p.taste) && p.taste.length
+    ? `<div class="taste"><span class="taste-lbl">Shared taste</span>${p.taste.slice(0, 6).map((t) => `<span class="tag">${escapeHtml(t.name)}${typeof t.affinity === 'number' ? `<i>${t.affinity.toFixed(2)}</i>` : ''}</span>`).join('')}</div>`
+    : '';
   const gaps = p.gaps.length ? `<div class="gaps"><b>Not filled:</b> ${p.gaps.map(escapeHtml).join(', ')}. Qloo did not return a place that fits those slots in ${escapeHtml(p.city)} — so the day is shorter rather than padded.</div>` : '';
-  out.innerHTML = head + `<ul class="stops">${items}</ul>` + gaps;
+  out.innerHTML = head + taste + `<ul class="stops">${items}</ul>` + gaps;
 }
 
 $('#demo').addEventListener('click', async () => {
