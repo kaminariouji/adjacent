@@ -122,6 +122,24 @@ export class QlooClient {
   }
 
   /**
+   * The cross-domain jump: the same seeds, asked for in other media. This is the
+   * claim Adjacent makes, so it is a first-class call rather than a UI trick.
+   * Types are asked sequentially and each failure is reported, not hidden.
+   */
+  async crossDomain({ seeds = [], types = ['urn:entity:artist', 'urn:entity:movie', 'urn:entity:book'], take = 4 } = {}) {
+    const out = {};
+    for (const type of types) {
+      try {
+        const { entities } = await this.insights({ entityType: type, seeds, take });
+        out[type] = entities;
+      } catch (err) {
+        out[type] = { error: err.status ?? 0, message: err.message };
+      }
+    }
+    return out;
+  }
+
+  /**
    * /v2/insights — the only recommendation endpoint the hackathon key supports.
    * seeds: array of entity ids (signal.interests.entities).
    * city/country narrow the result set geographically.

@@ -37,6 +37,35 @@ export async function tasteTags() {
   return TAGS.map(([name, affinity]) => ({ id: 'tag-' + name.replace(/\s+/g, '-'), name, type: 'urn:tag:keyword:media', affinity }));
 }
 
+const CROSS = {
+  'urn:entity:artist': [
+    ['a1', 'Demdike Stare', 0.82, 'seed-burial', 0.61],
+    ['a2', 'Andy Stott', 0.79, 'seed-burial', 0.57],
+    ['a3', 'KTL', 0.71, 'seed-wkw', 0.34],
+  ],
+  'urn:entity:movie': [
+    ["m1", "Long Day's Journey into Night", 0.77, 'seed-wkw', 0.63],
+    ['m2', 'The Turin Horse', 0.74, 'seed-bolano', 0.41],
+    ['m3', 'Sonatine', 0.70, 'seed-wkw', 0.38],
+  ],
+  'urn:entity:book': [
+    ['b1', '2666', 0.81, 'seed-bolano', 0.72],
+    ['b2', 'The Emigrants', 0.69, 'seed-wkw', 0.29],
+  ],
+};
+
+export async function crossDomain({ seeds = [] }) {
+  const chosen = new Set(seeds);
+  const out = {};
+  for (const [type, rows] of Object.entries(CROSS)) {
+    out[type] = rows.map(([id, name, affinity, sid, score], i) => ({
+      id, name, type, affinity, image: img(30 + i),
+      explainability: { inputs: chosen.size === 0 || chosen.has(sid) ? [{ id: sid, score }] : [] },
+    }));
+  }
+  return out;
+}
+
 export async function insights({ city, seeds = [] }) {
   const chosen = new Set(seeds);
   return PLACES.map(([id, name, subtype, affinity, ...inputs], i) => ({

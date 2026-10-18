@@ -76,6 +76,17 @@
   figure{margin:0;background:var(--paper-2);border-radius:12px;overflow:hidden;aspect-ratio:3/2}
   figure img{width:100%;height:100%;object-fit:cover;display:block}
   .gaps{margin-top:18px;font-size:13.5px;color:var(--ink-2);background:#fff8;border:1px dashed var(--line);border-radius:12px;padding:14px 16px}
+  .cross{margin-top:36px;border-top:1px solid var(--line);padding-top:26px}
+  .cross h2{font-family:var(--serif);font-weight:500;font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+  .cross .lede{color:var(--muted);font-size:13.5px;margin:0 0 18px;max-width:62ch}
+  .cross-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .cross-col{background:#fffdf8;border:1px solid var(--line);border-radius:14px;padding:16px 16px 8px;box-shadow:var(--shadow)}
+  .cross-col h3{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+  .cross-item{padding:10px 0;border-top:1px solid #f1eade}
+  .cross-item:first-of-type{border-top:0;padding-top:0}
+  .cross-item b{display:block;font-family:var(--serif);font-weight:600;font-size:16px;letter-spacing:-.01em}
+  .cross-item span{font-size:12px;color:var(--muted)}
+  .cross-fail{font-size:12.5px;color:var(--muted);padding:2px 0 8px}
   .empty{margin-top:34px;color:var(--muted);font-size:14px}
   .err{margin-top:26px;border:1px solid #e3b9a8;background:#fdf0ea;color:#7a2d12;border-radius:12px;padding:14px 16px;font-size:14px}
   footer{border-top:1px solid var(--line);padding:26px 0 60px;color:var(--muted);font-size:12.5px;line-height:1.6}
@@ -85,6 +96,7 @@
     .when{padding:18px 18px 0}
     .body{grid-template-columns:1fr;padding:12px 18px 20px}
     figure{order:-1}
+    .cross-grid{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -123,17 +135,18 @@
 
   <main>
     <div id="out" aria-live="polite"></div>
+    <div id="crossOut" aria-live="polite"></div>
   </main>
 
   <footer>
-    <b>How the reasons work.</b> Each chip is Qloo's own explainability score for one of your seeds — the share of that recommendation's affinity that came from that input. If Qloo returns no explanation for a place, the card says nothing rather than inventing a story. Empty slots are named, not filled.
+    <b>How the reasons work.</b> Each chip is Qloo's own explainability score for one of your seeds — the share of that recommendation's affinity that came from that input. If Qloo returns no explanation for a place, the card says nothing rather than inventing a story. Empty slots are named, not filled. The cross-media panel asks the same seeds for artists, films and books; a domain Qloo cannot answer is shown as an error, not as a guess.
   </footer>
 </div>
 
 <script>
 const state = { seeds: [], results: [], active: -1, source: null };
 const $ = (s) => document.querySelector(s);
-const seedInput = $('#seed'), suggest = $('#suggest'), chips = $('#chips'), cityInput = $('#city'), go = $('#go'), out = $('#out'), statusEl = $('#status'), srcBadge = $('#src');
+const seedInput = $('#seed'), suggest = $('#suggest'), chips = $('#chips'), cityInput = $('#city'), go = $('#go'), out = $('#out'), crossOut = $('#crossOut'), statusEl = $('#status'), srcBadge = $('#src');
 
 function setStatus(t){ statusEl.textContent = t || ''; }
 function renderChips(){
@@ -210,11 +223,13 @@ document.addEventListener('click', (e) => {
 
 go.addEventListener('click', async () => {
   go.disabled = true; setStatus('Reading the taste graph…');
-  out.innerHTML = '';
+  out.innerHTML = ''; crossOut.innerHTML = '';
+  const seeds = state.seeds.map((s) => ({ id: s.id, label: s.name }));
+  const crossPromise = renderCross(seeds);
   try {
     const r = await fetch('/api/plan', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ seeds: state.seeds.map((s) => ({ id: s.id, label: s.name })), city: cityInput.value.trim() }),
+      body: JSON.stringify({ seeds, city: cityInput.value.trim() }),
     });
     const j = await r.json();
     if (!r.ok) throw new Error(j.message || j.error || ('HTTP ' + r.status));
@@ -223,7 +238,10 @@ go.addEventListener('click', async () => {
   } catch (err) {
     out.innerHTML = `<div class="err"><b>Could not build the day.</b> ${escapeHtml(err.message)}</div>`;
     setStatus('');
-  } finally { go.disabled = state.seeds.length === 0; }
+  } finally {
+    await crossPromise;
+    go.disabled = state.seeds.length === 0;
+  }
 });
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -262,6 +280,34 @@ function render(p){
     : '';
   const gaps = p.gaps.length ? `<div class="gaps"><b>Not filled:</b> ${p.gaps.map(escapeHtml).join(', ')}. Qloo did not return a place that fits those slots in ${escapeHtml(p.city)} — so the day is shorter rather than padded.</div>` : '';
   out.innerHTML = head + taste + `<ul class="stops">${items}</ul>` + gaps;
+}
+
+async function renderCross(seeds){
+  crossOut.innerHTML = '';
+  if (!seeds.length) return;
+  try {
+    const r = await fetch('/api/cross', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ seeds }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.message || j.error || ('HTTP ' + r.status));
+    const LABEL = { 'urn:entity:artist': 'Artists', 'urn:entity:movie': 'Films', 'urn:entity:book': 'Books' };
+    const cols = Object.entries(j.domains).map(([type, d]) => {
+      const items = d.items && d.items.length
+        ? d.items.map((it) => {
+            const why = it.why && it.why.length
+              ? `<span>${it.why.map((w) => escapeHtml(w.label)).join(' · ')}</span>`
+              : `<span>no explanation returned</span>`;
+            return `<div class="cross-item"><b>${escapeHtml(it.name || it.id)}</b>${why}</div>`;
+          }).join('')
+        : `<div class="cross-fail">${d.error ? 'Qloo returned an error for this domain (' + escapeHtml(String(d.error)) + ').' : 'Nothing returned for this domain.'}</div>`;
+      return `<div class="cross-col"><h3>${LABEL[type] || escapeHtml(type.replace('urn:entity:',''))}</h3>${items}</div>`;
+    }).join('');
+    crossOut.innerHTML = `<section class="cross"><h2>Adjacent, in other media</h2><p class="lede">The same taste, asked for somewhere else — the artist, the film, the book that sits next to what you already love.</p><div class="cross-grid">${cols}</div></section>`;
+  } catch (err) {
+    crossOut.innerHTML = `<div class="err"><b>Could not read across media.</b> ${escapeHtml(err.message)}</div>`;
+  }
 }
 
 $('#demo').addEventListener('click', async () => {

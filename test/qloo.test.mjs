@@ -120,3 +120,31 @@ test('tasteTags with no seeds makes no request at all', async () => {
   const c = new QlooClient({ apiKey: 'k', base: 'http://127.0.0.1:9', timeout: 500 });
   assert.deepEqual(await c.tasteTags({ seeds: [] }), []);
 });
+
+test('crossDomain asks one insights call per media type and keys results by type', async () => {
+  const { server, seen, base } = await fakeQloo((rec) => ({
+    status: 200,
+    body: { results: { entities: [{ id: `${rec.query['filter.type']}-1`, name: 'X' }] } },
+  }));
+  const c = new QlooClient({ apiKey: 'k', base });
+  const out = await c.crossDomain({ seeds: ['s1'], types: ['urn:entity:artist', 'urn:entity:movie'] });
+  server.close();
+  assert.deepEqual(seen.map((s) => s.query['filter.type']), ['urn:entity:artist', 'urn:entity:movie']);
+  assert.equal(seen[0].query['signal.interests.entities'], 's1');
+  assert.equal(out['urn:entity:artist'][0].id, 'urn:entity:artist-1');
+  assert.equal(out['urn:entity:movie'][0].id, 'urn:entity:movie-1');
+});
+
+test('crossDomain reports a failed domain instead of hiding it', async () => {
+  const { server, base } = await fakeQloo((rec) => (
+    rec.query['filter.type'] === 'urn:entity:movie'
+      ? { status: 500, body: { message: 'boom' } }
+      : { status: 200, body: { results: { entities: [{ id: 'a1', name: 'A' }] } } }
+  ));
+  const c = new QlooClient({ apiKey: 'k', base });
+  const out = await c.crossDomain({ seeds: ['s'], types: ['urn:entity:artist', 'urn:entity:movie'] });
+  server.close();
+  assert.equal(out['urn:entity:artist'][0].name, 'A');
+  assert.equal(out['urn:entity:movie'].error, 500);
+  assert.match(out['urn:entity:movie'].message, /boom/);
+});

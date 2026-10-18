@@ -1,7 +1,7 @@
 // app.mjs — transport-agnostic request handler shared by the local Node server
 // and the Cloudflare Worker. It owns no sockets, so the same code is what runs
 // in the hosted demo.
-import { buildPlan } from './plan.mjs';
+import { buildPlan, explain } from './plan.mjs';
 
 const CORS = {
   'access-control-allow-origin': '*',
@@ -74,6 +74,30 @@ export function createApp({ client, mock = null }) {
     });
   }
 
+  async function cross({ seeds }) {
+    if (!Array.isArray(seeds) || seeds.length === 0) return json(400, { error: 'pick at least one thing you love' });
+    const seedIds = seeds.map((s) => s.id).filter(Boolean);
+    if (!seedIds.length) return json(400, { error: 'seeds need ids' });
+    const seedLabels = Object.fromEntries(seeds.map((s) => [s.id, s.label || s.name || s.id]));
+    let raw;
+    try {
+      raw = mock ? await mock.crossDomain({ seeds: seedIds }) : await q.crossDomain({ seeds: seedIds, take: 4 });
+    } catch (err) {
+      return json(502, { error: 'qloo', status: err.status ?? null, message: err.message });
+    }
+    const shaped = {};
+    for (const [type, value] of Object.entries(raw)) {
+      if (!Array.isArray(value)) { shaped[type] = { error: value.error ?? null, items: [] }; continue; }
+      shaped[type] = {
+        items: value.slice(0, 4).map((e) => ({
+          id: e.id, name: e.name, image: e.image, affinity: e.affinity,
+          why: explain(e, seedLabels),
+        })),
+      };
+    }
+    return json(200, { seeds: seeds.map((s) => ({ id: s.id, label: s.label || s.name || s.id })), domains: shaped, source: mock ? 'fixture' : 'qloo' });
+  }
+
   return async function handle({ method, path, query = {}, body = null }) {
     if (method === 'OPTIONS') return { status: 204, headers: CORS, body: '' };
     if (method === 'GET' && path === '/api/health') return json(200, { ok: true, source: mock ? 'fixture' : 'qloo', hasKey: !mock });
@@ -87,6 +111,7 @@ export function createApp({ client, mock = null }) {
       }
     }
     if (method === 'POST' && path === '/api/plan') return plan(body || {});
+    if (method === 'POST' && path === '/api/cross') return cross(body || {});
     return json(404, { error: 'not found' });
   };
 }
