@@ -65,3 +65,12 @@ test('the fixture never serves Lisbon places for another city', async () => {
   assert.equal(tokyo.considered, 0);
   assert.equal(tokyo.sampleCity, 'Lisbon', 'the UI needs this to explain why the day is empty');
 });
+
+test('the fixture taste strip follows the seeds, not a fixed list', async () => {
+  const fixture = await import('../fixtures/lisbon.mjs');
+  const app = createApp({ client: null, mock: fixture });
+  const plan = JSON.parse((await post(app, '/api/plan', { seeds: [{ id: 'seed-wkw', label: 'Wong Kar-wai' }], city: 'Lisbon' })).body);
+  const names = plan.taste.map((t) => t.name);
+  assert.ok(names.includes('slow cinema'));
+  assert.ok(!names.includes('dub techno'), 'a Wong Kar-wai fan does not listen to dub techno');
+});
