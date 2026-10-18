@@ -4,6 +4,8 @@
 
 Built for the [Qloo Agentic Hackathon](https://qloo.devpost.com/).
 
+**Live demo:** https://adjacent.ojikaminari.workers.dev — runs on fixture data until the hackathon API key arrives; the badge in the header always says which source you are looking at.
+
 ## The idea
 
 Travel recommendations usually ask what you want to *do*. Adjacent asks what you already *love*, in any domain, and then moves that taste sideways: a Burial listener's next cocktail bar, a Wong Kar-wai fan's next gallery, an Ichiran regular's next lunch. The interesting question is not "what is popular in Lisbon" but "what in Lisbon is popular with people like you".
@@ -20,6 +22,10 @@ Two rules follow from that, and both are enforced in code:
 - If Qloo returns fewer places than the day has slots, the plan is **shorter and names the gaps**. It never pads the day with filler.
 
 A tool that explains itself has to be honest about the parts it cannot explain.
+
+## Adjacent in other media
+
+The day is only half the claim. `POST /api/cross` asks the same seeds for artists, films and books, so a jazz listener can see the records, the films and the novels that sit next to their taste. Each domain is a separate `/v2/insights` call; if one domain fails, that column says so and the other two still render. No column is ever filled with invented titles.
 
 ## Run it
 
@@ -55,10 +61,13 @@ GET /v2/insights
 
 ## Tests
 
-`npm test` runs two suites:
+`npm test` runs three suites:
 
-- **`test/qloo.test.mjs`** starts a fake Qloo instance that enforces the request shape — `X-Api-Key` and no `Authorization`, seeds joined by commas, explainability on, `results.entities` parsing, 401 surfaced as an error, network failure surfaced as status 0, and no invented rows for an unknown payload.
+- **`test/qloo.test.mjs`** starts a fake Qloo instance that enforces the request shape — `X-Api-Key` and no `Authorization`, seeds joined by commas, explainability on, `results.entities` parsing, 401 surfaced as an error, network failure surfaced as status 0, no invented rows for an unknown payload, and a cross-domain call where one media type fails while the others still return.
 - **`test/plan.test.mjs`** covers the day planner: one stop per slot, ranking by affinity, reasons mapped to the seeds the user actually picked, empty reasons when Qloo gives none, and gaps named rather than filled.
+- **`test/app.test.mjs`** covers the HTTP handler shared by Node and the Worker: cross-domain shaping with reasons, a refused empty seed list, a Qloo failure surfacing its real status, and the health badge telling the truth about the data source.
+
+22 tests, no network, no mocks of our own code — only of Qloo.
 
 ## Layout
 
@@ -67,6 +76,7 @@ src/qloo.mjs      Qloo client (no dependencies)
 src/plan.mjs      seeds + places → a five-stop day with reasons
 src/app.mjs       transport-agnostic handler (Node and Workers)
 src/server.mjs    local dev server + static files
+src/worker.mjs    Cloudflare Worker entry (API + static assets)
 public/index.html the whole UI, one file, no build step
 fixtures/         deterministic stand-in for the API
 ```
