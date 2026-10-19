@@ -42,10 +42,11 @@ export function normaliseEntity(e) {
     description: p.description || null,
     city: p.geocode?.city || null,
     country: p.geocode?.country_code || null,
-    lat: p.geocode?.latitude ?? p.latitude ?? null,
-    lon: p.geocode?.longitude ?? p.longitude ?? null,
-    affinity: typeof e.affinity === 'number' ? e.affinity : null,
-    tags: Array.isArray(p.tags) ? p.tags.slice(0, 8).map((t) => t.name || t) : [],
+    lat: p.geocode?.latitude ?? e.location?.lat ?? p.latitude ?? null,
+    lon: p.geocode?.longitude ?? e.location?.lon ?? p.longitude ?? null,
+    // Live insights put the score under query.affinity; fixtures put it at the top.
+    affinity: typeof e.affinity === 'number' ? e.affinity : typeof e.query?.affinity === 'number' ? e.query.affinity : null,
+    tags: (Array.isArray(e.tags) ? e.tags : Array.isArray(p.tags) ? p.tags : []).slice(0, 8).map((t) => t.name || t),
     explainability: e.query?.explainability || e.explainability || null,
     raw: e,
   };
@@ -56,7 +57,8 @@ export class QlooClient {
     if (!apiKey) throw new Error('QlooClient needs an apiKey');
     this.apiKey = apiKey;
     this.base = base.replace(/\/+$/, '');
-    this.fetch = fetchImpl;
+    // Workers throws "Illegal invocation" when fetch is called detached from globalThis.
+    this.fetch = fetchImpl.bind(globalThis);
     this.timeout = timeout;
   }
 

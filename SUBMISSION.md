@@ -53,13 +53,13 @@ GET /v2/insights
 
 - Live app: https://adjacent.ojikaminari.workers.dev
 - Screenshots: `demo/` (day view, cross-media panel, MCP session).
-- The app runs on fixture data until the hackathon key is issued; the badge says so. The fixture is a pinned, deterministic stand-in, not fabricated output presented as live.
+- Live since 2026-10-20: the deployed Worker holds the hackathon key as a secret (`wrangler secret put QLOO_API_KEY`) and the badge reads `live Qloo`. Every stop carries the affinity score Qloo returned and the tags Qloo attached to the place. The fixture path still exists (`QLOO_MOCK=1`) and the badge never hides which one is running.
 
 ## 5. Setup from a clean environment
 
 ```bash
 git clone <repo> && cd adjacent
-npm test                 # 29 tests, no network
+npm test                 # 31 tests, no network
 npm run start:mock       # http://127.0.0.1:8123, fixture data
 QLOO_API_KEY=... npm start   # live Qloo
 ```
@@ -68,8 +68,7 @@ Deploy: `npx wrangler deploy` (Cloudflare Worker + static assets). No database, 
 
 ## 6. Known limitations (what this does NOT prove)
 
-- **Live Qloo is not yet exercised.** The hackathon key was requested but not issued at submission time; the live path is implemented and contract-tested against a fake that enforces the exact request shape, but the demo currently runs on fixtures. The badge never hides this.
-- **Explainability is best-effort.** If Qloo returns no explanation for a place, the card shows no reason. It never invents one. That also means some cards are less persuasive than others.
+- **Explainability is thinner than the UI implies.** `/v2/insights` on a hackathon key returns `query.affinity`, `tags` and `query.measurements`, but not a per-seed explanation payload. The `why` row is therefore usually empty; the card falls back to affinity and tags, which is the evidence Qloo actually gave. No reason is ever synthesised.
 - **Coverage is Qloo's coverage.** A domain or city the graph does not cover produces a shorter plan with named gaps, not a padded one.
 - **No persistence or accounts.** The app is stateless; a saved day is a URL, not a user profile.
 - **Affinity is not causality.** A high weight means shared audience, not "you will like this". The UI presents it as evidence, not a promise.

@@ -4,7 +4,7 @@
 
 Built for the [Qloo Agentic Hackathon](https://qloo.devpost.com/).
 
-**Live demo:** https://adjacent.ojikaminari.workers.dev — runs on fixture data until the hackathon API key arrives; the badge in the header always says which source you are looking at.
+**Live demo:** https://adjacent.ojikaminari.workers.dev — running on live Qloo since 2026-10-20. Without a key the server falls back to the bundled fixture, and the badge in the header always says which source you are looking at.
 
 ## The idea
 
