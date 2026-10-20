@@ -47,7 +47,8 @@ test('insights joins seeds with commas and asks for explainability', async () =>
   assert.equal(seen[0].path, '/v2/insights');
   assert.equal(seen[0].query['filter.type'], 'urn:entity:place');
   assert.equal(seen[0].query['signal.interests.entities'], 'a,b');
-  assert.equal(seen[0].query['filter.geocode.city'], 'Lisbon');
+  assert.equal(seen[0].query['filter.location.query'], 'Lisbon');
+  assert.equal(seen[0].query['filter.geocode.city'], undefined, 'a bare city name is not a geocode filter');
   assert.equal(seen[0].query['feature.explainability'], 'true');
   assert.equal(seen[0].query.take, '5');
   assert.equal(out.entities[0].city, 'Lisbon');

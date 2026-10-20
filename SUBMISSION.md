@@ -52,8 +52,9 @@ GET /v2/insights
 ## 4. Demo and screenshots
 
 - Live app: https://adjacent.ojikaminari.workers.dev
-- Screenshots: `demo/` (day view, cross-media panel, MCP session).
-- Live since 2026-10-20: the deployed Worker holds the hackathon key as a secret (`wrangler secret put QLOO_API_KEY`) and the badge reads `live Qloo`. Every stop carries the affinity score Qloo returned and the tags Qloo attached to the place. The fixture path still exists (`QLOO_MOCK=1`) and the badge never hides which one is running.
+- Screenshots: `demo/day-view.png` (a five-stop day in Lisbon built from a Burial seed) and `demo/cross-media.png` (artists, films and books from the same audience cluster).
+- Recorded agent session: `demo/agent-session.md` — the full `initialize → tools/list → find_entities → plan_day → cross_media` exchange against the hosted `POST /mcp`, with the responses as they came back.
+- Live since 2026-10-20: the deployed Worker holds the hackathon key as a secret (`wrangler secret put QLOO_API_KEY`) and the badge reads `live Qloo`. Verified on 2026-10-20T19:36Z: `GET /api/health` returned `{"ok":true,"source":"qloo","hasKey":true}` and `POST /api/plan` returned five Lisbon places with Qloo affinity scores (0.89, 0.87, 0.87, 0.87, 0.87) and Qloo tags. The fixture path still exists (`QLOO_MOCK=1`) and the badge never hides which one is running.
 
 ## 5. Setup from a clean environment
 
@@ -72,3 +73,4 @@ Deploy: `npx wrangler deploy` (Cloudflare Worker + static assets). No database, 
 - **Coverage is Qloo's coverage.** A domain or city the graph does not cover produces a shorter plan with named gaps, not a padded one.
 - **No persistence or accounts.** The app is stateless; a saved day is a URL, not a user profile.
 - **Affinity is not causality.** A high weight means shared audience, not "you will like this". The UI presents it as evidence, not a promise.
+- **A bare city name is not a geocode filter.** `filter.geocode.city` without a country code is ignored by the API: asking for Lisbon returned London venues. The client now uses `filter.location.query` when no ISO country code is supplied, which resolves the name, and keeps the geocode filter when a code is present. Found and fixed on 2026-10-20 after the live badge was switched on; the two screenshots above are from the fixed build.

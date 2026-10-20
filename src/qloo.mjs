@@ -156,11 +156,17 @@ export class QlooClient {
     extra = {},
   } = {}) {
     if (!entityType) throw new Error('insights needs entityType');
+    // A city alone is not enough for the geocode filter: `filter.geocode.city` without a
+    // country code is ignored by the API and returns globally popular places (asking for
+    // Lisbon answered with London). `filter.location.query` resolves the name instead, so
+    // it is used whenever the caller has no ISO country code.
+    const location = country
+      ? { 'filter.geocode.city': city, 'filter.geocode.country_code': country }
+      : { 'filter.location.query': city };
     const params = {
       'filter.type': entityType,
       'signal.interests.entities': seeds,
-      'filter.geocode.city': city,
-      'filter.geocode.country_code': country,
+      ...location,
       take,
       'feature.explainability': explainability ? 'true' : 'false',
       ...extra,
