@@ -52,7 +52,7 @@ GET /v2/insights
 ## 4. Demo and screenshots
 
 - Live app: https://adjacent.ojikaminari.workers.dev
-- Screenshots: `demo/day-view.png` (a five-stop day in Lisbon built from a Burial seed) and `demo/cross-media.png` (artists, films and books from the same audience cluster).
+- Screenshots (primary evidence): `demo/live-day-view.png` — the live demo captured 2026-10-24: a full five-stop Lisbon day built from a Burial seed, showing the `LIVE QLOO` badge, the shared-taste tags, and real Qloo affinity scores (0.89 / 0.87 / 0.87 / 0.87 / 0.87). Secondary captures: `demo/day-view.png` (the same five-stop Lisbon day) and `demo/cross-media.png` (artists, films and books from the same audience cluster).
 - Recorded agent session: `demo/agent-session.md` — the full `initialize → tools/list → find_entities → plan_day → cross_media` exchange against the hosted `POST /mcp`, with the responses as they came back.
 - Live since 2026-10-20: the deployed Worker holds the hackathon key as a secret (`wrangler secret put QLOO_API_KEY`) and the badge reads `live Qloo`. Verified on 2026-10-20T19:36Z: `GET /api/health` returned `{"ok":true,"source":"qloo","hasKey":true}` and `POST /api/plan` returned five Lisbon places with Qloo affinity scores (0.89, 0.87, 0.87, 0.87, 0.87) and Qloo tags. The fixture path still exists (`QLOO_MOCK=1`) and the badge never hides which one is running.
 
