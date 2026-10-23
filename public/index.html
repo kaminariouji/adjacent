@@ -139,7 +139,7 @@
   </main>
 
   <footer>
-    <b>How the reasons work.</b> Each chip is Qloo's own explainability score for one of your seeds — the share of that recommendation's affinity that came from that input. If Qloo returns no explanation for a place, the card says nothing rather than inventing a story. Empty slots are named, not filled. The cross-media panel asks the same seeds for artists, films and books; a domain Qloo cannot answer is shown as an error, not as a guess.
+    <b>How the evidence works.</b> Every stop carries the affinity score Qloo returned for your seeds, plus the tags that describe the audience behind it. When Qloo returns a per-seed explanation it is shown as a chip; on the hackathon key it usually does not, so the chip reads "no explanation returned" rather than inventing a story. Empty slots are named, not filled. The cross-media panel asks the same seeds for artists, films and books; a domain Qloo cannot answer is shown as an error, not as a guess.
     <br /><br />
     <b>Agents can use this.</b> The same taste logic is exposed over MCP at <code>POST /mcp</code> with three tools: <code>find_entities</code>, <code>plan_day</code> and <code>cross_media</code>. The web page is just one client.
   </footer>
@@ -273,7 +273,7 @@ function render(p){
       <div class="body">
         <div>
           <h3>${escapeHtml(e.name || 'Unnamed place')}</h3>
-          <p class="sub">${escapeHtml(e.subtype || e.city || '')}</p>
+          <p class="sub">${escapeHtml((e.subtype && !e.subtype.startsWith("urn:")) ? e.subtype : e.city || '')}</p>
           <div class="why">${why}</div>
           ${score}
         </div>
