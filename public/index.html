@@ -316,7 +316,7 @@ async function renderCross(seeds){
   }
 }
 
-$('#demo').addEventListener('click', async () => {
+async function runDemo() {
   const names = ['Burial', 'Wong Kar-wai', 'Ichiran'];
   state.seeds = [];
   for (const n of names) {
@@ -327,7 +327,8 @@ $('#demo').addEventListener('click', async () => {
   }
   cityInput.value = 'Lisbon';
   renderChips();
-});
+}
+$('#demo').addEventListener('click', runDemo);
 
 (async () => {
   try {
@@ -341,9 +342,9 @@ $('#demo').addEventListener('click', async () => {
   // ?demo=1 — a judge should see the product, not an empty form. Nothing is
   // fabricated: the same fixture-labelled path runs, just without the typing.
   if (new URLSearchParams(location.search).has('demo')) {
-    document.querySelector('#demo').click();
-    for (let i = 0; i < 40 && state.seeds.length < 3; i++) await new Promise((r) => setTimeout(r, 100));
-    if (state.seeds.length) document.querySelector('#go').click();
+    await runDemo();
+    if (state.seeds.length > 0) document.querySelector('#go').click();
+    else out.innerHTML = '<div class="err"><b>Could not prepare the demo.</b> The seed search returned nothing — reload the page to try again.</div>';
   }
 })();
 </script>
