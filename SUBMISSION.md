@@ -40,11 +40,11 @@ GET /v2/insights
   → places that share audience with the seeds, with per-seed weights
 ```
 
-`/v2/tags` is used to validate tag ids. `/recommendations` and `/recs` are never called — they are legacy and unsupported by hackathon keys.
+A `tags()` helper exists for `/v2/tags`, but it is not called in the running app; the taste tags the demo shows come from `/v2/insights` with `filter.type=urn:tag` (see `tasteTags`). `/recommendations` and `/recs` are never called — they are legacy and unsupported by hackathon keys.
 
 **Why these choices.**
 - `signal.interests.entities` (not a text query) is what makes the result taste-driven rather than popularity-driven.
-- `feature.explainability=true` is what lets the UI print `because you love Burial · 0.52` from Qloo's own payload instead of generated prose.
+- `feature.explainability=true` is sent, but on a hackathon key `/v2/insights` does not return a per-seed explanation payload. The `why` rows are therefore empty and the cards show affinity plus tags only; a chip appears only when Qloo actually returns one.
 - `filter.geocode.city` keeps the answer in the city the user asked for; without it the graph returns globally popular places.
 
 **Redaction.** The demo screenshots and the recorded session contain no API key, no personal data, and no private identifiers. Seed labels are public artist/film names.
