@@ -4,7 +4,7 @@
 
 Built for the [Qloo Agentic Hackathon](https://qloo.devpost.com/).
 
-**Live demo:** https://adjacent.ojikaminari.workers.dev — running on live Qloo since 2026-10-20. Without a key the server falls back to the bundled fixture, and the badge in the header always says which source you are looking at.
+**Live demo:** https://adjacent.ojikaminari.workers.dev/?demo=1 — running on live Qloo since 2026-10-20. The ?demo=1 parameter fills three example seeds and builds the day on load; without it the page starts empty and waits for you. Without a key the server falls back to the bundled fixture, and the badge in the header always says which source you are looking at.
 
 ## The idea
 
@@ -80,7 +80,7 @@ base    https://hackathon.api.qloo.com
 auth    X-Api-Key: <key>
 reads   GET /search          → entity ids for a free-text name
         GET /v2/insights     → places that share audience with your seeds
-        GET /v2/tags         → valid tag ids
+        GET /v2/tags         → valid tag ids (helper only, never on the live path)
 never   /recommendations, /recs (legacy, unsupported by hackathon keys)
 ```
 
